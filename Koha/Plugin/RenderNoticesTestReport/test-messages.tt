@@ -1,0 +1,53 @@
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Render Notices Test Report</title>
+[% INCLUDE 'doc-head-close.inc' %]
+</head>
+<body>
+[% INCLUDE 'intranetstylesheet.inc' %]
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+[%# INCLUDE 'reports-toolbar.inc' %]
+<div class="row">
+    <div class="col-md-2 order-sm-2 order-md-1">
+        [% INCLUDE 'reports-menu.inc' %]
+    </div>
+    <div class="col-md-10 order-md-2 order-sm-1">
+        <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Render Notices Test Report</div>
+        <div>
+        [% IF error %]
+            <div class="alert alert-danger">
+                <p>Error here [% error %]</p>
+            </div>
+        [% END %]
+        [% FOREACH lang IN lang_results %]
+            <div style="border-bottom: 1px solid black;">
+                [% IF lang.error %]
+                    <div class="alert alert-danger">
+                        [% lang.error %]
+                    </div>
+                [% END %]
+                <h2>[% lang.lang %]</h2>
+                [% FOREACH result IN lang.results %]
+                    [% IF result.lang %]
+                        <h3>[% result.message_transport_type %]</h3>
+                    [% END %]
+
+                    [% IF result.ok %]
+                        <pre>[% result.ok.content | html %]</pre>
+                    [% END %]
+                    [% IF result.warning %]
+                        <div class="alert alert-warning">
+                            <p>WARNING: [% result.warning %]</p>
+                        </div>
+                    [% END %]
+                    [% IF result.error %]
+                        <div class="alert alert-danger">
+                            <p>ERROR: [% result.error %]</p>
+                        </div>
+                    [% END %]
+                [% END %]
+            </div>         
+        [% END %]
+    </div>
+</div>
+[% INCLUDE 'intranet-bottom.inc' %]
