@@ -72,6 +72,7 @@ sub TestNotice {
         $res->{error} = "ERROR: $@\n";
     } elsif ($letter) {
         $res->{ok} = $letter;
+        $res->{wrapped} = C4::Letters::_wrap_html( $letter->{'content'}, 'Preview for ' . $res->{'message_transport_type'} . ' ' . $res->{'lang'});
     }
 
     return $res;
@@ -159,9 +160,10 @@ sub TestNotices {
                                              result => $result
                                             };
             }
-            push @{$lang_result}, { lang => $lang, result => $transport_results };
+            push @{$lang_result}, { lang => $lang, result => $transport_results};
         }
         push @{$code_results}, { ok => { letter_code => $letter_code, result => $lang_result } };
     }
     return $code_results;
 }
+
