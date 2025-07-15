@@ -48,10 +48,9 @@ sub report {
     my $cgi = $self->{'cgi'};
 
     my $template = $self->get_template({ file => 'test-messages.tt' });
-    # my $vars = { lang_results => TestMessages() };
 
     $template->param(
-        lang_results => TestMessages()
+        code_results => TestMessages()
         );
 
     $self->output_html( $template->output() );

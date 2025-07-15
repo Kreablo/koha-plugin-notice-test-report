@@ -13,41 +13,39 @@
     </div>
     <div class="col-md-10 order-md-2 order-sm-1">
         <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Render Notices Test Report</div>
-        <div>
-        [% IF error %]
-            <div class="alert alert-danger">
-                <p>Error here [% error %]</p>
-            </div>
-        [% END %]
-        [% FOREACH lang IN lang_results %]
-            <div style="border-bottom: 1px solid black;">
-                [% IF lang.error %]
+        <div class="result">
+            [% FOREACH code_res IN code_results %]
+                [% IF code_res.error %]
                     <div class="alert alert-danger">
-                        [% lang.error %]
+                        [% code_res.error %]
                     </div>
                 [% END %]
-                <h2>[% lang.lang %]</h2>
-                [% FOREACH result IN lang.results %]
-                    [% IF result.lang %]
-                        <h3>[% result.message_transport_type %]</h3>
-                    [% END %]
-
-                    [% IF result.ok %]
-                        <pre>[% result.ok.content | html %]</pre>
-                    [% END %]
-                    [% IF result.warning %]
-                        <div class="alert alert-warning">
-                            <p>WARNING: [% result.warning %]</p>
-                        </div>
-                    [% END %]
-                    [% IF result.error %]
-                        <div class="alert alert-danger">
-                            <p>ERROR: [% result.error %]</p>
-                        </div>
-                    [% END %]
+                [% IF code_res.ok %]
+                    <h1>Letter code (msg type): [% code_res.ok.letter_code %]</h1>
+                    [% FOREACH lang_res IN code_res.ok.result %]
+                        <h2>Language: [% lang_res.lang %]</h2>
+                        [% FOREACH transport_res IN lang_res.result %]
+                            <h3>Transport type: [% transport_res.transport %]</h3>
+                            [% IF transport_res.error %]
+                                <div class="alert alert-danger">
+                                    [% transport_res.error %]
+                                </div>
+                            [% END %]
+                            [% IF transport_res.result.warning %]
+                                <div class="alert alert-warning">
+                                    <p>WARNING: [% transport_res.result.warning %]</p>
+                                </div>
+                            [% END %]
+                            [% IF transport_res.result.ok %]
+                                <pre class="resulting-letter">
+                                    [% transport_res.result.ok.content | html %] 
+                                </pre>
+                            [% END %]
+                        [% END %]
+                    [% END%]
                 [% END %]
-            </div>         
-        [% END %]
+            [% END %]
+        </div>
     </div>
-</div>
+</body>
 [% INCLUDE 'intranet-bottom.inc' %]
