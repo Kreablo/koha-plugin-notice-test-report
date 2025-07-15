@@ -7,7 +7,7 @@ use C4::Letters qw(GetPreparedLetter);
 use Log::Log4perl qw(:easy);
 Log::Log4perl->easy_init({
                           level => $DEBUG,
-                          file => ">>/kohadevbox/plugins/testmessages.log",
+                          file => ">>/kohadevbox/plugins/testnotices.log",
                          });
 use Koha::Patrons;
 
@@ -54,7 +54,7 @@ sub parse_letter {
                                           );
 }
 
-sub TestMessage {
+sub TestNotice {
     my $params = shift;
 
     my $letter;
@@ -77,7 +77,7 @@ sub TestMessage {
     return $res;
 }
 
-sub TestMessages {
+sub TestNotices {
     my $dbh = C4::Context->dbh;
     my $sth;
     my $href;
@@ -152,7 +152,7 @@ sub TestMessages {
                               'itemnumbers'            => \@itemnumbers,
                              };
 
-                my $result = TestMessage($params);
+                my $result = TestNotice($params);
 
                 push @{$transport_results}, {
                                              transport => $message_transport_type,

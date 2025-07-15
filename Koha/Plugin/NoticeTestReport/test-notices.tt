@@ -1,5 +1,5 @@
 [% INCLUDE 'doc-head-open.inc' %]
- <title>Render Notices Test Report</title>
+ <title>Notice Test Report</title>
 [% INCLUDE 'doc-head-close.inc' %]
 </head>
 <body>
@@ -12,7 +12,7 @@
         [% INCLUDE 'reports-menu.inc' %]
     </div>
     <div class="col-md-10 order-md-2 order-sm-1">
-        <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Render Notices Test Report</div>
+        <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
         <div class="result">
             [% FOREACH code_res IN code_results %]
                 [% IF code_res.error %]

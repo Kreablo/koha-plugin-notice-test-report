@@ -1,8 +1,8 @@
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME            => 'Koha::Plugin::RenderNoticesTestReport',
-    VERSION_FROM    => 'src/Koha/Plugin/RenderNoticesTestReport.pm',
+    NAME            => 'Koha::Plugin::NoticeTestReport',
+    VERSION_FROM    => 'Koha/Plugin/NoticeTestReport.pm',
     NO_MYMETA       => 1
 );
 
@@ -17,8 +17,8 @@ sub dist {
 kpzdist: $(DISTVNAME).kpz
 
 $(DISTVNAME).kpz: distdir
-	rm -f ../../$(DISTVNAME).kpz
-	cd $(DISTVNAME)/src && zip -r ../../$(DISTVNAME).kpz Koha/
+	rm -f ../$(DISTVNAME).kpz
+	cd $(DISTVNAME) && zip -r ../$(DISTVNAME).kpz Koha/
 
 .PHONY: kpzdist
 
