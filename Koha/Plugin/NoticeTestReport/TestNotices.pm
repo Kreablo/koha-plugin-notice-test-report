@@ -29,17 +29,17 @@ sub parse_letter {
 
     if ( my $p = $params->{'branchcode'} ) {
         $table_params{'branches'} = $p;
-        DEBUG 'BRANCHES ' . $p;
+        # DEBUG 'BRANCHES ' . $p;
     }
     if ( my $p = $params->{'itemnumber'} ) {
         $table_params{'issues'} = $p;
         $table_params{'items'} = $p;
-        DEBUG 'ITEMNUMBER ' . $p;
+        # DEBUG 'ITEMNUMBER ' . $p;
     }
     if ( my $p = $params->{'biblionumber'} ) {
         $table_params{'biblio'} = $p;
         $table_params{'biblioitems'} = $p;
-        DEBUG 'BIBLIO ' . $p;
+        # DEBUG 'BIBLIO ' . $p;
     }
 
     return C4::Letters::GetPreparedLetter (
@@ -78,7 +78,17 @@ sub TestNotice {
     return $res;
 }
 
+my $preduedgst = 'SELECT biblio.*, items.*, issues.* FROM issues,items,biblio WHERE biblio.biblionumber = items.biblionumber AND issues.itemnumber = items.itemnumber AND borrowernumber = ?';
+
+my %letter_codes = ('HOLD_SLIP' => 'SELECT * FROM reserves WHERE itemnumber IS NOT NULL LIMIT 1',
+                    'PREDUE' => 'SELECT * FROM issues INNER JOIN items USING (itemnumber) LIMIT 1',
+                    'PREDUEDGST' => $preduedgst,
+    );
+
 sub TestNotices {
+    my $letter_code = shift;
+
+    my $dbquery = %letter_codes{$letter_code};
     my $dbh = C4::Context->dbh;
     my $sth;
     my $href;
@@ -86,22 +96,15 @@ sub TestNotices {
     my @itemnumbers = ();
     my $titles = "";
 
-    my $preduedgst = 'SELECT biblio.*, items.*, issues.* FROM issues,items,biblio WHERE biblio.biblionumber = items.biblionumber AND issues.itemnumber = items.itemnumber AND borrowernumber = ?';
-
-    my %letter_codes = ('HOLD_SLIP' => 'SELECT * FROM reserves WHERE itemnumber IS NOT NULL LIMIT 1',
-                        'PREDUE' => 'SELECT * FROM issues INNER JOIN items USING (itemnumber) LIMIT 1',
-                        'PREDUEDGST' => $preduedgst,
-                       );
-
     my @transport_types = ( 'email', 'print', 'sms' );
     my @languages = ( 'default', 'sv-SE', 'en');
 
-    my $code_results = [];
+    my %code_results = ();
 
-    keys %letter_codes;
-    while (( my $letter_code, my $dbquery ) = each(%letter_codes)) {
+    # keys %letter_codes;
+    # while (( my $letter_code, my $dbquery ) = each(%letter_codes)) {
 
-        DEBUG 'letter code' . $letter_code;
+        # DEBUG 'letter code ' . $letter_code;
 
         if ($letter_code eq 'PREDUEDGST') {
             # select a user with multiple loans
@@ -116,7 +119,7 @@ sub TestNotices {
             while ( my $item_info = $sth->fetchrow_hashref ) {
                 $href = $item_info;
                 $titles .= C4::Letters::get_item_content( { item => $item_info, item_content_fields => \@item_content_fields } );
-                DEBUG 'TITLES ' . $titles;
+                # DEBUG 'TITLES ' . $titles;
                 push @itemnumbers, $item_info->{'itemnumber'};
             }
         } else {
@@ -126,17 +129,16 @@ sub TestNotices {
         }
 
         if (not $href) {
-            push @{$code_results}, { error => 'Cannot prepare letter with code ' . $letter_code };
-            next;
+            $code_results{error} = 'Cannot prepare letter with code ' . $letter_code;
         }
 
         my $lang_result = [];
         foreach my $lang (@languages) {
-            DEBUG 'language' . $lang;
+            # DEBUG 'language ' . $lang;
 
             my $transport_results = [];
             foreach my $message_transport_type (@transport_types) {
-                DEBUG 'transport_type' . $message_transport_type;
+                # DEBUG 'transport_type ' . $message_transport_type;
 
                 my $params = {
                               'borrowernumber'         => $href->{borrowernumber},
@@ -162,8 +164,8 @@ sub TestNotices {
             }
             push @{$lang_result}, { lang => $lang, result => $transport_results};
         }
-        push @{$code_results}, { ok => { letter_code => $letter_code, result => $lang_result } };
-    }
-    return $code_results;
+    $code_results{ok} = { letter_code => $letter_code, result => $lang_result };
+    # }
+    return \%code_results;
 }
 

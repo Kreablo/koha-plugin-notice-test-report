@@ -35,11 +35,16 @@ sub new {
 sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
+    my $selected_code = $cgi->param('code_list');
+    my $results = TestNotices($selected_code);
 
     my $template = $self->get_template({ file => 'test-notices.tt' });
 
     $template->param(
-        code_results => TestNotices()
+        code_res => $results,
+        cgi => $cgi,
+        selected_code => $selected_code
+        # selected_code_result => $selected_code_result
         );
 
     $self->output_html( $template->output() );
