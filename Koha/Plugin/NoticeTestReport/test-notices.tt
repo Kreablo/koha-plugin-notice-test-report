@@ -14,7 +14,7 @@
     <div class="col-md-10 order-md-2 order-sm-1">
       <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
       [% INCLUDE 'letter_code_selection' %]
-      [% IF code_res %]
+      [% IF code_result %]
         [% INCLUDE 'letter_codes' %]
       [% END %]
     </div>
@@ -25,32 +25,32 @@
 
 [% BLOCK 'letter_code_selection' %]
 <form method="get">
-  <input type="hidden" name="class" value="[% cgi.param('class') %]">
-  <input type="hidden" name="method" value="[% cgi.param('method') %]">
+  <input type="hidden" name="class" value="[% class %]">
+  <input type="hidden" name="method" value="[% method %]">
   <select name="letter_code">
     [% FOREACH code IN letter_codes %]
       <option
         value="[% code %]"
-        [% IF cgi.param("letter_code") == code %]selected[% END %]
+        [% IF code == selected_code %]selected[% END %]
       >
         [% code %]
       </option>
     [% END %]
-    <input type="submit" value="Submit" >
+    <input type="submit" value="Submit">
   </select>
 </form>
 [% END %] [%# letter_code_selection %]
 
 [% BLOCK 'letter_codes' %]
 <div class="result container">
-  [% IF code_res.error %]
+  [% IF code_result.error %]
     <div class="alert alert-danger">
-      [% code_res.error %]
+      [% code_result.error %]
     </div>
   [% END %]
-  [% IF code_res.ok %]
-    <h1>Letter code: [% code_res.ok.letter_code %]</h1>
-    [% FOREACH lang_res IN code_res.ok.result %]
+  [% IF code_result.ok %]
+    <h1>Letter code: [% code_result.ok.letter_code %]</h1>
+    [% FOREACH lang_res IN code_result.ok.result %]
       [% INCLUDE 'language_result' %]
     [% END%]
   [% END %]
@@ -62,7 +62,7 @@
 [% FOREACH transport_res IN lang_res.result %]
   [% INCLUDE 'transport_result' %]
 [% END %]
-[% END %] [%# letter_codes %]
+[% END %] [%# language_result %]
 
 [% BLOCK 'transport_result' %]
 [% UNLESS transport_res.transport == 'sms' && sms_send_driver == '' %]
