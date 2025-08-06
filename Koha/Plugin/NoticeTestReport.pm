@@ -46,7 +46,7 @@ sub report {
         cgi => $cgi,
         selected_code => $selected_code,
         letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes
-        );
+    );
     $self->output_html( $template->output() );
 }
 

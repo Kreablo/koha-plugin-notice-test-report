@@ -5,10 +5,12 @@ use C4::Context;
 use C4::Letters qw(GetPreparedLetter);
 
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init({
-                          level => $DEBUG,
-                          file => ">>/kohadevbox/plugins/testnotices.log",
-                         });
+Log::Log4perl->easy_init(
+    {
+        level => $DEBUG,
+        file => ">>/kohadevbox/plugins/testnotices.log",
+    }
+);
 use Koha::Plugin::NoticeTestReport::LetterCodes qw(letter_queries);
 use Koha::Patrons;
 
@@ -44,15 +46,15 @@ sub parse_letter {
     }
 
     return C4::Letters::GetPreparedLetter (
-                                           module => 'circulation',
-                                           letter_code => $params->{'letter_code'},
-                                           branchcode => $table_params{'branches'},
-                                           lang => $params->{'lang'},
-                                           substitute => $params->{'substitute'},
-                                           tables     => \%table_params,
-                                           ( $params->{itemnumbers} ? ( loops => { items => $params->{itemnumbers} } ) : () ),
-                                           message_transport_type => $params->{message_transport_type},
-                                          );
+        module => 'circulation',
+        letter_code => $params->{'letter_code'},
+        branchcode => $table_params{'branches'},
+        lang => $params->{'lang'},
+        substitute => $params->{'substitute'},
+        tables     => \%table_params,
+        ( $params->{itemnumbers} ? ( loops => { items => $params->{itemnumbers} } ) : () ),
+        message_transport_type => $params->{message_transport_type},
+    );
 }
 
 sub TestNotice {
@@ -67,13 +69,20 @@ sub TestNotice {
         $letter = parse_letter($params);
     };
 
-    my $res = { 'lang' => $params->{'lang'}, 'message_transport_type' => $params->{'message_transport_type'}, 'warning' => $warning };
+    my $res = {
+        'lang' => $params->{'lang'},
+        'message_transport_type' => $params->{'message_transport_type'},
+        'warning' => $warning
+    };
 
     if ($@) {
         $res->{error} = "ERROR: $@\n";
     } elsif ($letter) {
         $res->{ok} = $letter;
-        $res->{wrapped} = C4::Letters::_wrap_html( $letter->{'content'}, 'Preview for ' . $res->{'message_transport_type'} . ' ' . $res->{'lang'});
+        $res->{wrapped} = C4::Letters::_wrap_html(
+            $letter->{'content'},
+            'Preview for ' . $res->{'message_transport_type'} . ' ' . $res->{'lang'}
+        );
     }
 
     return $res;
@@ -101,66 +110,68 @@ sub TestNotices {
     # keys %letter_codes;
     # while (( my $letter_code, my $dbquery ) = each(%letter_codes)) {
 
-        # DEBUG 'letter code ' . $letter_code;
+    # DEBUG 'letter code ' . $letter_code;
 
-        if ($letter_code eq 'PREDUEDGST') {
-            # select a user with multiple loans
-            $sth = $dbh->prepare('SELECT borrowernumber FROM issues GROUP BY borrowernumber HAVING COUNT(*) >= 2 LIMIT 1');
-            $sth->execute();
+    if ($letter_code eq 'PREDUEDGST') {
+        # select a user with multiple loans
+        $sth = $dbh->prepare('SELECT borrowernumber FROM issues GROUP BY borrowernumber HAVING COUNT(*) >= 2 LIMIT 1');
+        $sth->execute();
 
-            my $prehref =  $sth->fetchrow_hashref;
+        my $prehref =  $sth->fetchrow_hashref;
 
-            $sth = $dbh->prepare($dbquery);
-            $sth->execute($prehref->{'borrowernumber'});
+        $sth = $dbh->prepare($dbquery);
+        $sth->execute($prehref->{'borrowernumber'});
 
-            while ( my $item_info = $sth->fetchrow_hashref ) {
-                $href = $item_info;
-                $titles .= C4::Letters::get_item_content( { item => $item_info, item_content_fields => \@item_content_fields } );
-                # DEBUG 'TITLES ' . $titles;
-                push @itemnumbers, $item_info->{'itemnumber'};
-            }
-        } else {
-            $sth = $dbh->prepare($dbquery);
-            $sth->execute();
-            $href = $sth->fetchrow_hashref;
+        while ( my $item_info = $sth->fetchrow_hashref ) {
+            $href = $item_info;
+            # DEBUG 'TITLES ' . $titles;
+            $titles .= C4::Letters::get_item_content(
+                { item => $item_info, item_content_fields => \@item_content_fields }
+            );
+            push @itemnumbers, $item_info->{'itemnumber'};
         }
+    } else {
+        $sth = $dbh->prepare($dbquery);
+        $sth->execute();
+        $href = $sth->fetchrow_hashref;
+    }
 
-        if (not $href) {
-            $code_results{error} = 'Cannot prepare letter with code ' . $letter_code;
+    if (not $href) {
+        $code_results{error} = 'Cannot prepare letter with code ' . $letter_code;
+    }
+
+    my $lang_result = [];
+    foreach my $lang (@languages) {
+        # DEBUG 'language ' . $lang;
+
+        my $transport_results = [];
+        foreach my $message_transport_type (@transport_types) {
+            # DEBUG 'transport_type ' . $message_transport_type;
+
+            my $params = {
+                'borrowernumber'         => $href->{borrowernumber},
+                'branchcode'             => $href->{branchcode},
+                'itemnumber'             => $href->{itemnumber},
+                'biblionumber'           => $href->{biblionumber},
+                'message_transport_type' => $message_transport_type,
+                'letter_code'            => $letter_code,
+                'lang'                   => $lang,
+                'substitute'             => {
+                    'count'         => scalar @itemnumbers,
+                    'items.content' => $titles,
+                },
+                'itemnumbers'            => \@itemnumbers,
+            };
+
+            my $result = TestNotice($params);
+
+            push @{$transport_results}, {
+                transport => $message_transport_type,
+                result => $result
+            };
         }
-
-        my $lang_result = [];
-        foreach my $lang (@languages) {
-            # DEBUG 'language ' . $lang;
-
-            my $transport_results = [];
-            foreach my $message_transport_type (@transport_types) {
-                # DEBUG 'transport_type ' . $message_transport_type;
-
-                my $params = {
-                              'borrowernumber'         => $href->{borrowernumber},
-                              'branchcode'             => $href->{branchcode},
-                              'itemnumber'             => $href->{itemnumber},
-                              'biblionumber'           => $href->{biblionumber},
-                              'message_transport_type' => $message_transport_type,
-                              'letter_code'            => $letter_code,
-                              'lang'                   => $lang,
-                              'substitute'             => {
-                                                           'count'         => scalar @itemnumbers,
-                                                           'items.content' => $titles,
-                                                          },
-                              'itemnumbers'            => \@itemnumbers,
-                             };
-
-                my $result = TestNotice($params);
-
-                push @{$transport_results}, {
-                                             transport => $message_transport_type,
-                                             result => $result
-                                            };
-            }
-            push @{$lang_result}, { lang => $lang, result => $transport_results};
-        }
+        push @{$lang_result}, { lang => $lang, result => $transport_results};
+    }
     $code_results{ok} = { letter_code => $letter_code, result => $lang_result };
     # }
     return \%code_results;

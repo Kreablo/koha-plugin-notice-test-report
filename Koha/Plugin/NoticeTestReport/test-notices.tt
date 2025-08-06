@@ -1,22 +1,22 @@
 [% INCLUDE 'doc-head-open.inc' %]
- <title>Notice Test Report</title>
+<title>Notice Test Report</title>
 [% INCLUDE 'doc-head-close.inc' %]
 </head>
 <body>
-[% INCLUDE 'intranetstylesheet.inc' %]
-[% INCLUDE 'header.inc' %]
-[% INCLUDE 'cat-search.inc' %]
-[%# INCLUDE 'reports-toolbar.inc' %]
-<div class="row">
+  [% INCLUDE 'intranetstylesheet.inc' %]
+  [% INCLUDE 'header.inc' %]
+  [% INCLUDE 'cat-search.inc' %]
+  [%# INCLUDE 'reports-toolbar.inc' %]
+  <div class="row">
     <div class="col-md-2 order-sm-2 order-md-1">
-        [% INCLUDE 'reports-menu.inc' %]
+      [% INCLUDE 'reports-menu.inc' %]
     </div>
     <div class="col-md-10 order-md-2 order-sm-1">
-        <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
-        [% INCLUDE 'letter_code_selection' %]
-        [% IF code_res %]
-          [% INCLUDE 'letter_codes' %]
-        [% END %]
+      <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
+      [% INCLUDE 'letter_code_selection' %]
+      [% IF code_res %]
+        [% INCLUDE 'letter_codes' %]
+      [% END %]
     </div>
 </body>
 [% INCLUDE 'intranet-bottom.inc' %]
@@ -36,24 +36,24 @@
         [% code %]
       </option>
     [% END %]
-<input type="submit" value="Submit" >
+    <input type="submit" value="Submit" >
   </select>
 </form>
 [% END %] [%# letter_code_selection %]
 
 [% BLOCK 'letter_codes' %]
 <div class="result container">
-    [% IF code_res.error %]
-      <div class="alert alert-danger">
-        [% code_res.error %]
-      </div>
-    [% END %]
-    [% IF code_res.ok %]
-      <h1>Letter code: [% code_res.ok.letter_code %]</h1>
-      [% FOREACH lang_res IN code_res.ok.result %]
-        [% INCLUDE 'language_result' %]
-      [% END%]
-    [% END %]
+  [% IF code_res.error %]
+    <div class="alert alert-danger">
+      [% code_res.error %]
+    </div>
+  [% END %]
+  [% IF code_res.ok %]
+    <h1>Letter code: [% code_res.ok.letter_code %]</h1>
+    [% FOREACH lang_res IN code_res.ok.result %]
+      [% INCLUDE 'language_result' %]
+    [% END%]
+  [% END %]
 </div>
 [% END %] [%# letter_codes %]
 
@@ -86,7 +86,12 @@
     </div>
     <div class="col-6">
       <h4>Preview</h4>
-      <iframe width="100%" height="100%" style="border-left: 1px dashed gray;" srcdoc="[% transport_res.result.wrapped | html %]">
+      <iframe
+        width="100%"
+        height="100%"
+        style="border-left: 1px dashed gray;"
+        srcdoc="[% transport_res.result.wrapped | html %]"
+      >
       </iframe>
     </div>
   </div>
