@@ -65,35 +65,37 @@
 [% END %] [%# letter_codes %]
 
 [% BLOCK 'transport_result' %]
-<h3>Transport type: [% transport_res.transport %]</h3>
-[% IF transport_res.error %]
-  <div class="alert alert-danger">
-    [% transport_res.error %]
-  </div>
-[% END %]
-[% IF transport_res.result.warning %]
-  <div class="alert alert-warning">
-    <p>WARNING: [% transport_res.result.warning %]</p>
-  </div>
-[% END %]
-[% IF transport_res.result.ok %]
-  <div class="row">
-    <div class="col-6">
-      <h4>Html</h4>
-      <pre class="resulting-letter">
-        [% transport_res.result.ok.content | html %]
-      </pre>
+[% UNLESS transport_res.transport == 'sms' && sms_send_driver == '' %]
+  <h3>Transport type: [% transport_res.transport %]</h3>
+  [% IF transport_res.error %]
+    <div class="alert alert-danger">
+      [% transport_res.error %]
     </div>
-    <div class="col-6">
-      <h4>Preview</h4>
-      <iframe
-        width="100%"
-        height="100%"
-        style="border-left: 1px dashed gray;"
-        srcdoc="[% transport_res.result.wrapped | html %]"
-      >
-      </iframe>
+  [% END %]
+  [% IF transport_res.result.warning %]
+    <div class="alert alert-warning">
+      <p>WARNING: [% transport_res.result.warning %]</p>
     </div>
-  </div>
+  [% END %]
+  [% IF transport_res.result.ok %]
+    <div class="row">
+      <div class="col-6">
+        <h4>Html</h4>
+        <pre class="resulting-letter">
+          [% transport_res.result.ok.content | html %]
+        </pre>
+      </div>
+      <div class="col-6">
+        <h4>Preview</h4>
+        <iframe
+          width="100%"
+          height="100%"
+          style="border-left: 1px dashed gray;"
+          srcdoc="[% transport_res.result.wrapped | html %]"
+        >
+        </iframe>
+      </div>
+    </div>
+  [% END %]
 [% END %]
 [% END %] [%# transport_types %]

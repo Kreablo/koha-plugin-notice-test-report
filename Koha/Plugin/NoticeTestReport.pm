@@ -45,7 +45,8 @@ sub report {
         code_res => $results,
         cgi => $cgi,
         selected_code => $selected_code,
-        letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes
+        letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes,
+        sms_send_driver => C4::Context->preference('SMSSendDriver')
     );
     $self->output_html( $template->output() );
 }
