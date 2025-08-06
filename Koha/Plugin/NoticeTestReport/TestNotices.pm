@@ -32,17 +32,14 @@ sub parse_letter {
 
     if ( my $p = $params->{'branchcode'} ) {
         $table_params{'branches'} = $p;
-        # DEBUG 'BRANCHES ' . $p;
     }
     if ( my $p = $params->{'itemnumber'} ) {
         $table_params{'issues'} = $p;
         $table_params{'items'} = $p;
-        # DEBUG 'ITEMNUMBER ' . $p;
     }
     if ( my $p = $params->{'biblionumber'} ) {
         $table_params{'biblio'} = $p;
         $table_params{'biblioitems'} = $p;
-        # DEBUG 'BIBLIO ' . $p;
     }
 
     return C4::Letters::GetPreparedLetter (
@@ -107,11 +104,6 @@ sub TestNotices {
 
     my %code_results = ();
 
-    # keys %letter_codes;
-    # while (( my $letter_code, my $dbquery ) = each(%letter_codes)) {
-
-    # DEBUG 'letter code ' . $letter_code;
-
     if ($letter_code eq 'PREDUEDGST') {
         # select a user with multiple loans
         $sth = $dbh->prepare('SELECT borrowernumber FROM issues GROUP BY borrowernumber HAVING COUNT(*) >= 2 LIMIT 1');
@@ -124,7 +116,6 @@ sub TestNotices {
 
         while ( my $item_info = $sth->fetchrow_hashref ) {
             $href = $item_info;
-            # DEBUG 'TITLES ' . $titles;
             $titles .= C4::Letters::get_item_content(
                 { item => $item_info, item_content_fields => \@item_content_fields }
             );
@@ -142,12 +133,9 @@ sub TestNotices {
 
     my $lang_result = [];
     foreach my $lang (@languages) {
-        # DEBUG 'language ' . $lang;
-
         my $transport_results = [];
-        foreach my $message_transport_type (@transport_types) {
-            # DEBUG 'transport_type ' . $message_transport_type;
 
+        foreach my $message_transport_type (@transport_types) {
             my $params = {
                 'borrowernumber'         => $href->{borrowernumber},
                 'branchcode'             => $href->{branchcode},
@@ -173,7 +161,6 @@ sub TestNotices {
         push @{$lang_result}, { lang => $lang, result => $transport_results};
     }
     $code_results{ok} = { letter_code => $letter_code, result => $lang_result };
-    # }
     return \%code_results;
 }
 
