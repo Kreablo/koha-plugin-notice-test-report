@@ -5,6 +5,7 @@ use Modern::Perl;
 use base qw(Koha::Plugins::Base);
 
 use Koha::Plugin::NoticeTestReport::TestNotices qw(TestNotices);
+use Koha::Plugin::NoticeTestReport::LetterCodes qw(letter_codes);
 
 our $VERSION = "0.1.0";
 our $MINIMUM_VERSION = "24";
@@ -35,7 +36,7 @@ sub new {
 sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
-    my $selected_code = $cgi->param('code_list');
+    my $selected_code = $cgi->param('letter_code');
     my $results = TestNotices($selected_code);
 
     my $template = $self->get_template({ file => 'test-notices.tt' });
@@ -43,10 +44,9 @@ sub report {
     $template->param(
         code_res => $results,
         cgi => $cgi,
-        selected_code => $selected_code
-        # selected_code_result => $selected_code_result
+        selected_code => $selected_code,
+        letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes
         );
-
     $self->output_html( $template->output() );
 }
 

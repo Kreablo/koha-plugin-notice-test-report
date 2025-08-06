@@ -9,6 +9,7 @@ Log::Log4perl->easy_init({
                           level => $DEBUG,
                           file => ">>/kohadevbox/plugins/testnotices.log",
                          });
+use Koha::Plugin::NoticeTestReport::LetterCodes qw(letter_queries);
 use Koha::Patrons;
 
 binmode(STDOUT, ':encoding(UTF-8)');
@@ -78,17 +79,13 @@ sub TestNotice {
     return $res;
 }
 
-my $preduedgst = 'SELECT biblio.*, items.*, issues.* FROM issues,items,biblio WHERE biblio.biblionumber = items.biblionumber AND issues.itemnumber = items.itemnumber AND borrowernumber = ?';
-
-my %letter_codes = ('HOLD_SLIP' => 'SELECT * FROM reserves WHERE itemnumber IS NOT NULL LIMIT 1',
-                    'PREDUE' => 'SELECT * FROM issues INNER JOIN items USING (itemnumber) LIMIT 1',
-                    'PREDUEDGST' => $preduedgst,
-    );
-
 sub TestNotices {
     my $letter_code = shift;
 
-    my $dbquery = %letter_codes{$letter_code};
+    my $dbquery = %Koha::Plugin::NoticeTestReport::LetterCodes::letter_queries{$letter_code};
+    unless ($dbquery) {
+        return;
+    }
     my $dbh = C4::Context->dbh;
     my $sth;
     my $href;

@@ -14,7 +14,9 @@
     <div class="col-md-10 order-md-2 order-sm-1">
         <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
         [% INCLUDE 'letter_code_selection' %]
-        [% INCLUDE 'letter_codes' %]
+        [% IF code_res %]
+          [% INCLUDE 'letter_codes' %]
+        [% END %]
     </div>
 </body>
 [% INCLUDE 'intranet-bottom.inc' %]
@@ -25,15 +27,18 @@
 <form method="get">
   <input type="hidden" name="class" value="[% cgi.param('class') %]">
   <input type="hidden" name="method" value="[% cgi.param('method') %]">
-  <select name="code_list">
-    <option value="HOLD_SLIP" [% IF cgi.param("code_list") == "HOLD_SLIP" %]selected[% END %]>HOLD_SLIP</option>
-<option value="PREDUE" [% IF cgi.param("code_list") == "PREDUE" %]selected[% END %]>PREDUE</option>
-<option value="PREDUEDGST" [% IF cgi.param("code_list") == "PREDUEDGST" %]selected[% END %]>PREDUEDGST</option>
-<input type="submit" value="SUbmit" >
+  <select name="letter_code">
+    [% FOREACH code IN letter_codes %]
+      <option
+        value="[% code %]"
+        [% IF cgi.param("letter_code") == code %]selected[% END %]
+      >
+        [% code %]
+      </option>
+    [% END %]
+<input type="submit" value="Submit" >
   </select>
 </form>
-<pre>Code res: [% code_res.ok.letter_code %] </pre>
-<h3>SELECTED [% selected_code %] </h3>
 [% END %] [%# letter_code_selection %]
 
 [% BLOCK 'letter_codes' %]
@@ -44,7 +49,7 @@
       </div>
     [% END %]
     [% IF code_res.ok %]
-      <h1>Letter code (msg type): [% code_res.ok.letter_code %]</h1>
+      <h1>Letter code: [% code_res.ok.letter_code %]</h1>
       [% FOREACH lang_res IN code_res.ok.result %]
         [% INCLUDE 'language_result' %]
       [% END%]
