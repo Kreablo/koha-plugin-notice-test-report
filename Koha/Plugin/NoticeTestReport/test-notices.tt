@@ -27,7 +27,8 @@
 <form method="get">
   <input type="hidden" name="class" value="[% class %]">
   <input type="hidden" name="method" value="[% method %]">
-  <select name="letter_code">
+  <label for="code">Letter Code</label>
+  <select name="code">
     [% FOREACH code IN letter_codes %]
       <option
         value="[% code %]"
@@ -36,8 +37,8 @@
         [% code %]
       </option>
     [% END %]
-    <input type="submit" value="Submit">
   </select>
+    <input type="submit" value="Submit">
 </form>
 [% END %] [%# letter_code_selection %]
 

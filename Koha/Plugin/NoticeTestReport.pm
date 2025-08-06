@@ -36,7 +36,7 @@ sub new {
 sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
-    my $selected_code = $cgi->param('letter_code');
+    my $selected_code = $cgi->param('code');
     my $code_result = TestNotices($selected_code);
 
     my $template = $self->get_template({ file => 'test-notices.tt' });
