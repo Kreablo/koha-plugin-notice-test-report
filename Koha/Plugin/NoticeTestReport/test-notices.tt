@@ -14,7 +14,7 @@
     <div class="col-md-10 order-md-2 order-sm-1">
       <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
       [% INCLUDE 'letter_code_selection' %]
-      [% IF code_result %]
+      [% IF code_results.ok %]
         [% INCLUDE 'letter_codes' %]
       [% END %]
     </div>
@@ -44,14 +44,14 @@
 
 [% BLOCK 'letter_codes' %]
 <div class="result container">
-  [% IF code_result.error %]
+  [% IF code_results.error %]
     <div class="alert alert-danger">
-      [% code_result.error %]
+      [% code_results.error %]
     </div>
   [% END %]
-  [% IF code_result.ok %]
-    <h1>Letter code: [% code_result.ok.letter_code %]</h1>
-    [% FOREACH lang_res IN code_result.ok.result %]
+  [% IF code_results %]
+    <h1>Letter code: [% code_results.ok.letter_code %]</h1>
+    [% FOREACH lang_res IN code_results.ok.result %]
       [% INCLUDE 'language_result' %]
     [% END%]
   [% END %]
@@ -59,44 +59,46 @@
 [% END %] [%# letter_codes %]
 
 [% BLOCK 'language_result' %]
-<h2>Language: [% lang_res.lang %]</h2>
-[% FOREACH transport_res IN lang_res.result %]
-  [% INCLUDE 'transport_result' %]
-[% END %]
+<div style="">
+  <h2>Language: [% lang_res.lang %]</h2>
+  [% FOREACH transport_res IN lang_res.result %]
+      [% INCLUDE 'transport_result' %]
+  [% END %]
+</div>
 [% END %] [%# language_result %]
 
 [% BLOCK 'transport_result' %]
 [% UNLESS transport_res.transport == 'sms' && sms_send_driver == '' %]
   <h3>Transport type: [% transport_res.transport %]</h3>
-  [% IF transport_res.error %]
-    <div class="alert alert-danger">
-      [% transport_res.error %]
-    </div>
-  [% END %]
-  [% IF transport_res.result.warning %]
-    <div class="alert alert-warning">
-      <p>WARNING: [% transport_res.result.warning %]</p>
-    </div>
-  [% END %]
-  [% IF transport_res.result.ok %]
-    <div class="row">
-      <div class="col-6">
-        <h4>Html</h4>
-        <pre class="resulting-letter">
-          [% transport_res.result.ok.content | html %]
-        </pre>
+  <div style="border: 1px dashed gray;">
+    [% IF transport_res.error %]
+      <div class="alert alert-danger">
+        [% transport_res.error %]
       </div>
-      <div class="col-6">
-        <h4>Preview</h4>
-        <iframe
-          width="100%"
-          height="100%"
-          style="border-left: 1px dashed gray;"
-          srcdoc="[% transport_res.result.wrapped | html %]"
-        >
-        </iframe>
+    [% END %]
+    [% IF transport_res.result.warning %]
+      <div class="alert alert-warning">
+        <p>WARNING: [% transport_res.result.warning %]</p>
       </div>
-    </div>
-  [% END %]
+    [% END %]
+    [% IF transport_res.result.ok %]
+      <div class="row">
+        <div class="col-6">
+          <h4>Html</h4>
+          <pre class="resulting-letter">
+            [% transport_res.result.ok.content | html %]
+          </pre>
+        </div>
+        <div class="col-6" style="border-left: 1px dashed gray; display: flex; align-items: stretch;" >
+          <h4>Preview</h4>
+          <iframe
+            style="width: 100%;"
+            srcdoc="[% transport_res.result.wrapped | html %]"
+          >
+          </iframe>
+        </div>
+      </div>
+    [% END %]
+  </div>
 [% END %]
 [% END %] [%# transport_types %]

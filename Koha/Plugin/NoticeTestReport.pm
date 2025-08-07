@@ -37,7 +37,7 @@ sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
     my $selected_code = $cgi->param('code');
-    my $code_result = TestNotices($selected_code);
+    my $code_results = TestNotices($selected_code);
 
     my $template = $self->get_template({ file => 'test-notices.tt' });
     my $sms_send_driver = C4::Context->preference('SMSSendDriver') =~ s/\s//gr;
@@ -45,7 +45,7 @@ sub report {
     $template->param(
         class => $cgi->param('class'),
         method => $cgi->param('method'),
-        code_result => $code_result,
+        code_results => $code_results,
         selected_code => $selected_code,
         letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes,
         sms_send_driver => $sms_send_driver
