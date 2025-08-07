@@ -16,11 +16,6 @@ use Koha::Patrons;
 
 binmode(STDOUT, ':encoding(UTF-8)');
 
-my $itemscontent = join(',',qw( date_due title author barcode ));
-
-# The fields that will be substituted into <<items.content>>
-my @item_content_fields = split(/,/,$itemscontent);
-
 sub parse_letter {
     my $params = shift;
 
@@ -88,48 +83,24 @@ sub TestNotice {
 sub TestNotices {
     my $letter_code = shift;
 
-    my $dbquery = %Koha::Plugin::NoticeTestReport::LetterCodes::letter_queries{$letter_code};
-    unless ($dbquery) {
+    my $queryfun = %Koha::Plugin::NoticeTestReport::LetterCodes::letter_queries{$letter_code};
+    unless ($queryfun) {
         return;
     }
-    my $dbh = C4::Context->dbh;
-    my $sth;
-    my $href;
-
-    my @itemnumbers = ();
-    my $titles = "";
-
-    my @transport_types = ( 'email', 'print', 'sms' );
-    my @languages = ( 'default', 'sv-SE', 'en');
+    my $codequery = &$queryfun;
 
     my %code_results = ();
 
-    if ($letter_code eq 'PREDUEDGST') {
-        # select a user with multiple loans
-        $sth = $dbh->prepare('SELECT borrowernumber FROM issues GROUP BY borrowernumber HAVING COUNT(*) >= 2 LIMIT 1');
-        $sth->execute();
+    my $href = $codequery->{href};
+    my $rest_params = $codequery->{params};
 
-        my $prehref =  $sth->fetchrow_hashref;
-
-        $sth = $dbh->prepare($dbquery);
-        $sth->execute($prehref->{'borrowernumber'});
-
-        while ( my $item_info = $sth->fetchrow_hashref ) {
-            $href = $item_info;
-            $titles .= C4::Letters::get_item_content(
-                { item => $item_info, item_content_fields => \@item_content_fields }
-            );
-            push @itemnumbers, $item_info->{'itemnumber'};
-        }
-    } else {
-        $sth = $dbh->prepare($dbquery);
-        $sth->execute();
-        $href = $sth->fetchrow_hashref;
-    }
-
-    if (not $href) {
+    if ( ! defined $href ) {
         $code_results{error} = 'Cannot prepare letter with code ' . $letter_code;
+        return \%code_results;
     }
+
+    my @transport_types = ( 'email', 'print', 'sms' );
+    my @languages = ( 'default', 'sv-SE', 'en');
 
     my $lang_result = [];
     foreach my $lang (@languages) {
@@ -144,11 +115,7 @@ sub TestNotices {
                 'message_transport_type' => $message_transport_type,
                 'letter_code'            => $letter_code,
                 'lang'                   => $lang,
-                'substitute'             => {
-                    'count'         => scalar @itemnumbers,
-                    'items.content' => $titles,
-                },
-                'itemnumbers'            => \@itemnumbers,
+                %$rest_params
             };
 
             my $result = TestNotice($params);
@@ -163,4 +130,3 @@ sub TestNotices {
     $code_results{ok} = { letter_code => $letter_code, result => $lang_result };
     return \%code_results;
 }
-
