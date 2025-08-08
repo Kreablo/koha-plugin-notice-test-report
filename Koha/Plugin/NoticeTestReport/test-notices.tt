@@ -14,9 +14,7 @@
     <div class="col-md-10 order-md-2 order-sm-1">
       <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
       [% INCLUDE 'letter_code_selection' %]
-      [% IF code_results.ok %]
-        [% INCLUDE 'letter_codes' %]
-      [% END %]
+      [% INCLUDE 'letter_codes' %]
     </div>
 </body>
 [% INCLUDE 'intranet-bottom.inc' %]
@@ -49,7 +47,7 @@
       [% code_results.error %]
     </div>
   [% END %]
-  [% IF code_results %]
+  [% IF code_results.ok %]
     <h1>Letter code: [% code_results.ok.letter_code %]</h1>
     [% FOREACH lang_res IN code_results.ok.result %]
       [% INCLUDE 'language_result' %]
