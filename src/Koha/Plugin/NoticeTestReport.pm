@@ -7,14 +7,14 @@ use base qw(Koha::Plugins::Base);
 use Koha::Plugin::NoticeTestReport::TestNotices qw(TestNotices);
 use Koha::Plugin::NoticeTestReport::LetterCodes qw(letter_codes);
 
-our $VERSION = "0.1.0";
+our $VERSION = "0.2.0";
 our $MINIMUM_VERSION = "24";
 
 our $metadata = {
     name            => 'NoticeTestReport',
     author          => 'Robin Jonsson',
     date_authored   => '2025-07-10',
-    date_updated    => '2025-07-15',
+    date_updated    => '2025-08-12',
     minimum_version => $MINIMUM_VERSION,
     maximum_version => undef,
     version         => $VERSION,
@@ -37,7 +37,8 @@ sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
     my $selected_code = $cgi->param('code');
-    my $code_results = TestNotices($selected_code);
+    my $selected_categorycode = $cgi->param('categorycode');
+    my $code_results = TestNotices($selected_code, { categorycode => $selected_categorycode });
 
     my $template = $self->get_template({ file => 'test-notices.tt' });
     my $sms_send_driver = C4::Context->preference('SMSSendDriver') =~ s/\s//gr;

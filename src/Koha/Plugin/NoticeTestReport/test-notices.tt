@@ -1,3 +1,4 @@
+[% USE Categories %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Notice Test Report</title>
 [% INCLUDE 'doc-head-close.inc' %]
@@ -23,17 +24,28 @@
 
 [% BLOCK 'letter_code_selection' %]
 <form method="get">
-  <input type="hidden" name="class" value="[% class %]">
-  <input type="hidden" name="method" value="[% method %]">
+  <input type="hidden" name="class" value="[% class | html %]">
+  <input type="hidden" name="method" value="[% method | html %]">
   <label for="code">Letter Code</label>
   <select name="code">
     [% FOREACH code IN letter_codes %]
       <option
-        value="[% code %]"
+        value="[% code | html %]"
         [% IF code == selected_code %]selected[% END %]
       >
-        [% code %]
+        [% code | html %]
       </option>
+    [% END %]
+  </select>
+  <label for="categorycode">Example using borrower from category (if applicative)</label>
+  <select name="categorycode">
+    <option value="">None</option>
+    [% FOREACH cat IN Categories.all.unblessed %]
+    <option
+       value="[% cat.categorycode | html %]"
+       >
+       [% cat.description | html %]
+    </option>
     [% END %]
   </select>
     <input type="submit" value="Submit">

@@ -75,12 +75,13 @@ sub TestNotice {
 
 sub TestNotices {
     my $letter_code = shift;
+    my $params = shift;
 
     my $queryfun = %Koha::Plugin::NoticeTestReport::LetterCodes::letter_queries{$letter_code};
     unless ($queryfun) {
         return;
     }
-    my $codequery = &$queryfun;
+    my $codequery = $queryfun->($params);
 
     my %code_results = ();
 
@@ -93,7 +94,8 @@ sub TestNotices {
     }
 
     my @transport_types = ( 'email', 'print', 'sms' );
-    my @languages = ( 'default', 'sv-SE', 'en');
+
+    my @languages = ('default', (split ",", C4::Context->preference('StaffInterfaceLanguages')));
 
     my $lang_result = [];
     foreach my $lang (@languages) {

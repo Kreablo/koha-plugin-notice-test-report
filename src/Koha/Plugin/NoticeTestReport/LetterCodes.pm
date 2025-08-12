@@ -9,8 +9,15 @@ our %letter_queries = (
 our @letter_codes = sort(keys %letter_queries);
 
 sub hold_slip {
-    my $q = 'SELECT * FROM reserves WHERE itemnumber IS NOT NULL LIMIT 1';
-    my $sth = runquery($q);
+    my $params = shift;
+    my $sth;
+    if ($params->{branchcode}) {
+        my $q = 'SELECT * FROM reserves JOIN borrowers USING (borrowernumber) WHERE itemnumber IS NOT NULL AND branchcode = ? LIMIT 1';
+        $sth = runquery($q, $params->{branchcode});
+    } else {
+        my $q = 'SELECT * FROM reserves WHERE itemnumber IS NOT NULL LIMIT 1';
+        $sth = runquery($q);
+    }
     my $href = $sth->fetchrow_hashref;
 
     return { href => $href, params => {} };
