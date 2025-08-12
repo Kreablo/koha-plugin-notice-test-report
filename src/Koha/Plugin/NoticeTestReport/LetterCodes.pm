@@ -11,9 +11,9 @@ our @letter_codes = sort(keys %letter_queries);
 sub hold_slip {
     my $params = shift;
     my $sth;
-    if ($params->{branchcode}) {
-        my $q = 'SELECT * FROM reserves JOIN borrowers USING (borrowernumber) WHERE itemnumber IS NOT NULL AND branchcode = ? LIMIT 1';
-        $sth = runquery($q, $params->{branchcode});
+    if ($params->{cateogrycode}) {
+        my $q = 'SELECT * FROM reserves JOIN borrowers USING (borrowernumber) WHERE itemnumber IS NOT NULL AND categorycode = ? LIMIT 1';
+        $sth = runquery($q, $params->{categorycode});
     } else {
         my $q = 'SELECT * FROM reserves WHERE itemnumber IS NOT NULL LIMIT 1';
         $sth = runquery($q);
@@ -24,8 +24,15 @@ sub hold_slip {
 }
 
 sub predue {
-    my $q = 'SELECT * FROM issues INNER JOIN items USING (itemnumber) LIMIT 1';
-    my $sth = runquery($q);
+    my $params = shift;
+    my $sth;
+    if ($params->{categorycode}) {
+        my $q = 'SELECT * FROM issues INNER JOIN items USING (itemnumber) JOIN borrowers USING(borrowernumber) WHERE categorycode = ? LIMIT 1';
+        $sth = runquery($q, $params->{categorycode});
+    } else {
+        my $q = 'SELECT * FROM issues INNER JOIN items USING (itemnumber) LIMIT 1';
+        $sth = runquery($q);
+    }
     my $href = $sth->fetchrow_hashref;
 
     return { href => $href, params => {} };
@@ -36,8 +43,15 @@ my $itemscontent = join(',',qw( date_due title author barcode ));
 my @item_content_fields = split(/,/,$itemscontent);
 
 sub preduedgst {
+    my $params = shift;
+
     my $q = 'SELECT biblio.*, items.*, issues.* FROM issues,items,biblio WHERE biblio.biblionumber = items.biblionumber AND issues.itemnumber = items.itemnumber AND borrowernumber = ?';
-    my $borrowernumber = &multi_loan_borrower;
+    my $borrowernumber = multi_loan_borrower($params);
+
+    if (!defined $borrowernumber) {
+        return { error => "Could not find borrower with several loans." };
+    }
+
     my $sth = runquery($q, $borrowernumber);
     my $href;
 
@@ -75,9 +89,16 @@ sub runquery {
 }
 
 sub multi_loan_borrower {
-    my $sth = runquery('SELECT borrowernumber FROM issues GROUP BY borrowernumber HAVING COUNT(*) >= 2 LIMIT 1');
-    my $href = $sth->fetchrow_hashref;
+    my $params = shift;
+    my $sth;
 
+    if ($params->{categorycode}) {
+        $sth = runquery('SELECT borrowernumber FROM issues JOIN borrowers USING(borrowernumber) WHERE categorycode=? GROUP BY borrowernumber HAVING COUNT(*) >= 2 LIMIT 1', $params->{categorycode});
+    } else {
+        $sth = runquery('SELECT borrowernumber FROM issues GROUP BY borrowernumber HAVING COUNT(*) >= 2 LIMIT 1');
+    }
+
+    my $href = $sth->fetchrow_hashref;
     return $href->{borrowernumber};
 }
 

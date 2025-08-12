@@ -83,6 +83,10 @@ sub TestNotices {
     }
     my $codequery = $queryfun->($params);
 
+    if (exists $codequery->{error}) {
+        return $codequery;
+    }
+
     my %code_results = ();
 
     my $href = $codequery->{href};

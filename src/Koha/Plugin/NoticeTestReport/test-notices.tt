@@ -44,6 +44,7 @@
     <option
        value="[% cat.categorycode | html %]"
        >
+       [% IF cat.categorycode == cgi.param('categorycode') %]selected[% END %]
        [% cat.description | html %]
     </option>
     [% END %]
