@@ -49,7 +49,8 @@ sub report {
         code_results => $code_results,
         selected_code => $selected_code,
         letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes,
-        sms_send_driver => $sms_send_driver
+        sms_send_driver => $sms_send_driver,
+        selected_categorycode => $selected_categorycode,
     );
     $self->output_html( $template->output() );
 }

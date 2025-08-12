@@ -43,8 +43,8 @@
     [% FOREACH cat IN Categories.all.unblessed %]
     <option
        value="[% cat.categorycode | html %]"
+       [% IF cat.categorycode == selected_categorycode %]selected[% END %]
        >
-       [% IF cat.categorycode == cgi.param('categorycode') %]selected[% END %]
        [% cat.description | html %]
     </option>
     [% END %]
