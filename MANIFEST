@@ -1,8 +1,6 @@
-LICENSE
 Makefile.PL
 MANIFEST			This list of files
-README.md
-Koha/Plugin/NoticeTestReport.pm
-Koha/Plugin/NoticeTestReport/test-notices.tt
-Koha/Plugin/NoticeTestReport/TestNotices.pm
-t/00-load.t
+src/Koha/Plugin/NoticeTestReport.pm
+src/Koha/Plugin/NoticeTestReport/test-notices.tt
+src/Koha/Plugin/NoticeTestReport/TestNotices.pm
+src/Koha/Plugin/NoticeTestReport/LetterCodes.pm
