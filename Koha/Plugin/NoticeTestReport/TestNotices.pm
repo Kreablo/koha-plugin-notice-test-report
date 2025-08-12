@@ -4,13 +4,6 @@ use Modern::Perl;
 use C4::Context;
 use C4::Letters qw(GetPreparedLetter);
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init(
-    {
-        level => $DEBUG,
-        file => ">>/kohadevbox/plugins/testnotices.log",
-    }
-);
 use Koha::Plugin::NoticeTestReport::LetterCodes qw(letter_queries);
 use Koha::Patrons;
 
