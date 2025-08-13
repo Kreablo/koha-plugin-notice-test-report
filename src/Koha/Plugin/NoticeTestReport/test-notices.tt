@@ -85,7 +85,7 @@
 [% BLOCK 'transport_result' %]
 [% UNLESS transport_res.transport == 'sms' && sms_send_driver == '' %]
 <h3>Transport type: [% transport_res.transport %]</h3>
-<div style="border: 1px dashed gray;">
+<div class="container border">
   [% IF transport_res.error %]
   <div class="alert alert-danger">
     [% transport_res.error %]
@@ -97,29 +97,29 @@
   </div>
   [% END %]
   [% IF transport_res.result.ok && !transport_res.fallback %]
-  <div class="row">
+  <div class="container row">
     <div class="col-4">
       <h4>Template</h4>
     </div>
-    <div class="col-4" style="border-left: 1px dashed gray;">
+    <div class="col-4">
       <h4>Html</h4>
     </div>
-    <div class="col-4" style="border-left: 1px dashed gray;">
+    <div class="col-4">
       <h4>Preview</h4>
     </div>
   </div>
-  <div class="row">
-    <div class="col-4">
+  <div class="container row">
+    <div class="col-4 border">
       <pre>
 [% transport_res.result.template.content | html %]
       </pre>
     </div>
-    <div class="col-4" style="border-left: 1px dashed gray; ">
+    <div class="col-4 border">
       <pre class="resulting-letter">
             [% transport_res.result.ok.content | html %]
       </pre>
     </div>
-    <div class="col-4" style="border-left: 1px dashed gray; display: flex; align-items: stretch;" >
+    <div class="col-4 border" style="display: flex; align-items: stretch;" >
       <iframe
         style="width: 100%;"
         srcdoc="[% transport_res.result.wrapped | html %]"
