@@ -46,7 +46,7 @@ sub report {
     $template->param(
         class => $cgi->param('class'),
         method => $cgi->param('method'),
-        code_results => $code_results,
+        branch_results => $code_results,
         selected_code => $selected_code,
         letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes,
         sms_send_driver => $sms_send_driver,

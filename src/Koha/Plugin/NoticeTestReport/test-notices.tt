@@ -15,7 +15,11 @@
     <div class="col-md-10 order-md-2 order-sm-1">
       <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Notice Test Report</div>
       [% INCLUDE 'letter_code_selection' %]
+      [% FOREACH branch_res IN branch_results %]
+      <h1>Branch: [% branch_res.branch %]</h1>
+      [% SET code_results = branch_res.result %]
       [% INCLUDE 'letter_codes' %]
+      [% END %]
     </div>
 </body>
 [% INCLUDE 'intranet-bottom.inc' %]
@@ -29,12 +33,12 @@
   <label for="code">Letter Code</label>
   <select name="code">
     [% FOREACH code IN letter_codes %]
-      <option
-        value="[% code | html %]"
-        [% IF code == selected_code %]selected[% END %]
-      >
-        [% code | html %]
-      </option>
+    <option
+      value="[% code | html %]"
+      [% IF code == selected_code %]selected[% END %]
+    >
+      [% code | html %]
+    </option>
     [% END %]
   </select>
   <label for="categorycode">Example using borrower from category (if applicative)</label>
@@ -42,29 +46,29 @@
     <option value="">None</option>
     [% FOREACH cat IN Categories.all.unblessed %]
     <option
-       value="[% cat.categorycode | html %]"
-       [% IF cat.categorycode == selected_categorycode %]selected[% END %]
-       >
-       [% cat.description | html %]
+      value="[% cat.categorycode | html %]"
+      [% IF cat.categorycode == selected_categorycode %]selected[% END %]
+    >
+      [% cat.description | html %]
     </option>
     [% END %]
   </select>
-    <input type="submit" value="Submit">
+  <input type="submit" value="Submit">
 </form>
 [% END %] [%# letter_code_selection %]
 
 [% BLOCK 'letter_codes' %]
 <div class="result container">
   [% IF code_results.error %]
-    <div class="alert alert-danger">
-      [% code_results.error %]
-    </div>
+  <div class="alert alert-danger">
+    [% code_results.error %]
+  </div>
   [% END %]
   [% IF code_results.ok %]
-    <h1>Letter code: [% code_results.ok.letter_code %]</h1>
-    [% FOREACH lang_res IN code_results.ok.result %]
-      [% INCLUDE 'language_result' %]
-    [% END%]
+  <h1>Letter code: [% code_results.ok.letter_code %]</h1>
+  [% FOREACH lang_res IN code_results.ok.result %]
+  [% INCLUDE 'language_result' %]
+  [% END%]
   [% END %]
 </div>
 [% END %] [%# letter_codes %]
@@ -73,57 +77,57 @@
 <div style="">
   <h2>Language: [% lang_res.lang %]</h2>
   [% FOREACH transport_res IN lang_res.result %]
-      [% INCLUDE 'transport_result' %]
+  [% INCLUDE 'transport_result' %]
   [% END %]
 </div>
 [% END %] [%# language_result %]
 
 [% BLOCK 'transport_result' %]
 [% UNLESS transport_res.transport == 'sms' && sms_send_driver == '' %]
-  <h3>Transport type: [% transport_res.transport %]</h3>
-  <div style="border: 1px dashed gray;">
-    [% IF transport_res.error %]
-      <div class="alert alert-danger">
-        [% transport_res.error %]
-      </div>
-    [% END %]
-    [% IF transport_res.result.warning %]
-      <div class="alert alert-warning">
-        <p>WARNING: [% transport_res.result.warning %]</p>
-      </div>
-    [% END %]
-    [% IF transport_res.result.ok %]
-      <div class="row">
-        <div class="col-4">
-          <h4>Template</h4>
-        </div>
-        <div class="col-4" style="border-left: 1px dashed gray;">
-          <h4>Html</h4>
-        </div>
-        <div class="col-4" style="border-left: 1px dashed gray;">
-          <h4>Preview</h4>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-4">
-          <pre>
-[% transport_res.result.template.content | html %]
-          </pre>
-        </div>
-        <div class="col-4" style="border-left: 1px dashed gray; ">
-          <pre class="resulting-letter">
-            [% transport_res.result.ok.content | html %]
-          </pre>
-        </div>
-        <div class="col-4" style="border-left: 1px dashed gray; display: flex; align-items: stretch;" >
-          <iframe
-            style="width: 100%;"
-            srcdoc="[% transport_res.result.wrapped | html %]"
-          >
-          </iframe>
-        </div>
-      </div>
-    [% END %]
+<h3>Transport type: [% transport_res.transport %]</h3>
+<div style="border: 1px dashed gray;">
+  [% IF transport_res.error %]
+  <div class="alert alert-danger">
+    [% transport_res.error %]
   </div>
+  [% END %]
+  [% IF transport_res.result.warning %]
+  <div class="alert alert-warning">
+    <p>WARNING: [% transport_res.result.warning %]</p>
+  </div>
+  [% END %]
+  [% IF transport_res.result.ok && !transport_res.fallback %]
+  <div class="row">
+    <div class="col-4">
+      <h4>Template</h4>
+    </div>
+    <div class="col-4" style="border-left: 1px dashed gray;">
+      <h4>Html</h4>
+    </div>
+    <div class="col-4" style="border-left: 1px dashed gray;">
+      <h4>Preview</h4>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-4">
+      <pre>
+[% transport_res.result.template.content | html %]
+      </pre>
+    </div>
+    <div class="col-4" style="border-left: 1px dashed gray; ">
+      <pre class="resulting-letter">
+            [% transport_res.result.ok.content | html %]
+      </pre>
+    </div>
+    <div class="col-4" style="border-left: 1px dashed gray; display: flex; align-items: stretch;" >
+      <iframe
+        style="width: 100%;"
+        srcdoc="[% transport_res.result.wrapped | html %]"
+      >
+      </iframe>
+    </div>
+  </div>
+  [% END %]
+</div>
 [% END %]
 [% END %] [%# transport_types %]

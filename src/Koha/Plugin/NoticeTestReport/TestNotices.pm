@@ -6,10 +6,12 @@ use C4::Letters qw(GetPreparedLetter);
 
 use Koha::Plugin::NoticeTestReport::LetterCodes qw(letter_queries);
 use Koha::Patrons;
+use Koha::Notice::Templates;
 
 binmode(STDOUT, ':encoding(UTF-8)');
 
 sub parse_letter {
+    my $letter_branchcode = shift;
     my $params = shift;
 
     foreach my $required ( qw( letter_code borrowernumber ) ) {
@@ -32,7 +34,7 @@ sub parse_letter {
 
     my $module = 'circulation';
     my $letter_code = $params->{'letter_code'};
-    my $branchcode = $table_params{'branches'};
+    my $branchcode = $letter_branchcode;
     my $mtt = $params->{'message_transport_type'};
     my $lang = $params->{'lang'};
 
@@ -59,6 +61,7 @@ sub parse_letter {
 }
 
 sub TestNotice {
+    my $letter_branchcode = shift;
     my $params = shift;
 
     my $parse;
@@ -67,7 +70,7 @@ sub TestNotice {
     local $SIG{__WARN__} = sub{ $warning = $_[0]; };
 
     eval {
-        $parse = parse_letter($params);
+        $parse = parse_letter($letter_branchcode, $params);
     };
 
     my $letter = $parse->{'prepared'};
@@ -83,6 +86,7 @@ sub TestNotice {
     } elsif ($letter) {
         $res->{ok} = $letter;
         $res->{template} = $parse->{'unprepared'};
+        $res->{parsed_branchcode} = $res->{template}->get_column('branchcode');
         $res->{wrapped} = C4::Letters::_wrap_html(
             $letter->{'content'},
             'Preview for ' . $res->{'message_transport_type'} . ' ' . $res->{'lang'}
@@ -92,11 +96,12 @@ sub TestNotice {
     return $res;
 }
 
-sub TestNotices {
+sub _TestNotices {
+    my $letter_branchcode = shift;
     my $letter_code = shift;
     my $params = shift;
 
-    my $queryfun = %Koha::Plugin::NoticeTestReport::LetterCodes::letter_queries{$letter_code};
+    my $queryfun = $Koha::Plugin::NoticeTestReport::LetterCodes::letter_queries{$letter_code};
     unless ($queryfun) {
         return;
     }
@@ -136,15 +141,43 @@ sub TestNotices {
                 %$rest_params
             };
 
-            my $result = TestNotice($params);
+            my $result = TestNotice($letter_branchcode, $params);
+            my $fallback = $letter_branchcode && !($result->{parsed_branchcode} eq $letter_branchcode); # && !($result->{warning} eq '');
+            if ($fallback) {
+                $result->{warning} .= "<br><strong>WARNING: $letter_branchcode $letter_code $message_transport_type '$lang' is a fallback message but there are some other messages defined for this branch.</strong>";
+            }
 
             push @{$transport_results}, {
                 transport => $message_transport_type,
-                result => $result
+                result => $result,
+                fallback => $fallback
             };
         }
         push @{$lang_result}, { lang => $lang, result => $transport_results};
     }
     $code_results{ok} = { letter_code => $letter_code, result => $lang_result };
     return \%code_results;
+}
+
+sub TestNotices {
+    my $letter_code = shift;
+    my $rest = @_;
+
+    my $_branch_q = Koha::Notice::Templates->search(
+        {
+            code => $letter_code
+        },
+        {
+            distinct => 1
+        }
+    );
+    my @branchcodes = $_branch_q->get_column('branchcode');
+
+    my $results = [];
+
+    foreach my $branch (@branchcodes) {
+        push @{$results}, { branch => $branch, result => _TestNotices($branch, $letter_code, $rest) };
+    }
+
+    return $results;
 }
