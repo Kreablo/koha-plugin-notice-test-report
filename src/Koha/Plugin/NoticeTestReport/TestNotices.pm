@@ -30,29 +30,47 @@ sub parse_letter {
         $table_params{'biblioitems'} = $p;
     }
 
-    return C4::Letters::GetPreparedLetter (
-        module => 'circulation',
-        letter_code => $params->{'letter_code'},
-        branchcode => $table_params{'branches'},
-        lang => $params->{'lang'},
+    my $module = 'circulation';
+    my $letter_code = $params->{'letter_code'};
+    my $branchcode = $table_params{'branches'};
+    my $mtt = $params->{'message_transport_type'};
+    my $lang = $params->{'lang'};
+
+    my $unprepared_letter = Koha::Notice::Templates->find_effective_template(
+        {
+            module                 => $module,
+            code                   => $letter_code,
+            branchcode             => $branchcode,
+            message_transport_type => $mtt,
+            lang                   => $lang
+        }
+    );
+    my $prepared_letter = C4::Letters::GetPreparedLetter (
+        module => $module,
+        letter_code => $letter_code,
+        branchcode => $branchcode,
+        lang => $lang,
         substitute => $params->{'substitute'},
         tables     => \%table_params,
         ( $params->{itemnumbers} ? ( loops => { items => $params->{itemnumbers} } ) : () ),
-        message_transport_type => $params->{message_transport_type},
+        message_transport_type => $mtt,
     );
+    return { unprepared => $unprepared_letter, prepared => $prepared_letter };
 }
 
 sub TestNotice {
     my $params = shift;
 
-    my $letter;
+    my $parse;
 
     my $warning;
     local $SIG{__WARN__} = sub{ $warning = $_[0]; };
 
     eval {
-        $letter = parse_letter($params);
+        $parse = parse_letter($params);
     };
+
+    my $letter = $parse->{'prepared'};
 
     my $res = {
         'lang' => $params->{'lang'},
@@ -64,6 +82,7 @@ sub TestNotice {
         $res->{error} = "ERROR: $@\n";
     } elsif ($letter) {
         $res->{ok} = $letter;
+        $res->{template} = $parse->{'unprepared'};
         $res->{wrapped} = C4::Letters::_wrap_html(
             $letter->{'content'},
             'Preview for ' . $res->{'message_transport_type'} . ' ' . $res->{'lang'}

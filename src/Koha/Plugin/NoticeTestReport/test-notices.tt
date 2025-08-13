@@ -94,14 +94,28 @@
     [% END %]
     [% IF transport_res.result.ok %]
       <div class="row">
-        <div class="col-6">
+        <div class="col-4">
+          <h4>Template</h4>
+        </div>
+        <div class="col-4" style="border-left: 1px dashed gray;">
           <h4>Html</h4>
+        </div>
+        <div class="col-4" style="border-left: 1px dashed gray;">
+          <h4>Preview</h4>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <pre>
+[% transport_res.result.template.content | html %]
+          </pre>
+        </div>
+        <div class="col-4" style="border-left: 1px dashed gray; ">
           <pre class="resulting-letter">
             [% transport_res.result.ok.content | html %]
           </pre>
         </div>
-        <div class="col-6" style="border-left: 1px dashed gray; display: flex; align-items: stretch;" >
-          <h4>Preview</h4>
+        <div class="col-4" style="border-left: 1px dashed gray; display: flex; align-items: stretch;" >
           <iframe
             style="width: 100%;"
             srcdoc="[% transport_res.result.wrapped | html %]"
