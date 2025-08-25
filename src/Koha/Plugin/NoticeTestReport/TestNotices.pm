@@ -31,6 +31,9 @@ sub parse_letter {
         $table_params{'biblio'} = $p;
         $table_params{'biblioitems'} = $p;
     }
+    if ( my $p = $params->{'hold'}) {
+        $table_params{'reserves'} = $p;
+    }
 
     my $module = 'circulation';
     my $letter_code = $params->{'letter_code'};
@@ -138,7 +141,7 @@ sub _TestNotices {
                 'message_transport_type' => $message_transport_type,
                 'letter_code'            => $letter_code,
                 'lang'                   => $lang,
-                %$rest_params
+                %$rest_params,
             };
 
             my $result = TestNotice($letter_branchcode, $params);

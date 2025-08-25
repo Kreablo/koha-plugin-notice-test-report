@@ -20,7 +20,7 @@ sub hold_slip {
     }
     my $href = $sth->fetchrow_hashref;
 
-    return { href => $href, params => {} };
+    return { href => $href, params => { 'hold' => $href } };
 }
 
 sub predue {
