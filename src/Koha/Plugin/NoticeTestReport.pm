@@ -7,14 +7,14 @@ use base qw(Koha::Plugins::Base);
 use Koha::Plugin::NoticeTestReport::TestNotices qw(TestNotices);
 use Koha::Plugin::NoticeTestReport::LetterCodes qw(letter_codes);
 
-our $VERSION = "0.2.0";
+our $VERSION = "0.3.0";
 our $MINIMUM_VERSION = "24";
 
 our $metadata = {
     name            => 'NoticeTestReport',
     author          => 'Robin Jonsson',
     date_authored   => '2025-07-10',
-    date_updated    => '2025-08-12',
+    date_updated    => '2025-08-25',
     minimum_version => $MINIMUM_VERSION,
     maximum_version => undef,
     version         => $VERSION,
