@@ -4,9 +4,17 @@ our %letter_queries = (
     'HOLD_SLIP' => \&hold_slip,
     'PREDUE' => \&predue,
     'PREDUEDGST' => \&preduedgst,
+    'HOLDDGST' => \&holddgst,
 );
 
 our @letter_codes = sort(keys %letter_queries);
+
+=head2 holddgst
+Since Kohas implementation of HOLDDGST is concatenation of unsent messages this might as well just call hold_slip
+=cut
+sub holddgst {
+    return hold_slip(@_);
+}
 
 sub hold_slip {
     my $params = shift;
