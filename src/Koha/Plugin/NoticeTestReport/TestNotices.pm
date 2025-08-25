@@ -142,9 +142,10 @@ sub _TestNotices {
             };
 
             my $result = TestNotice($letter_branchcode, $params);
-            my $fallback = $letter_branchcode && !($result->{parsed_branchcode} eq $letter_branchcode); # && !($result->{warning} eq '');
+            my $fallback = $letter_branchcode && !($result->{parsed_branchcode} eq $letter_branchcode);
             if ($fallback) {
-                $result->{warning} .= "<br><strong>WARNING: $letter_branchcode $letter_code $message_transport_type '$lang' is a fallback message but there are some other messages defined for this branch.</strong>";
+                my $msg = "$letter_branchcode $letter_code $message_transport_type '$lang' is a fallback message but there are some other messages defined for this branch.";
+                $result->{warning} = (defined $result->{warning}) ? $result->warning . "<br>$msg" : $msg;
             }
 
             push @{$transport_results}, {
