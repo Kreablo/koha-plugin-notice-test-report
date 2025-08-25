@@ -96,6 +96,11 @@
     <p>WARNING: [% transport_res.result.warning %]</p>
   </div>
   [% END %]
+  [% IF transport_res.result.error %]
+    <div class="alert alert-danger">
+      <p>[% transport_res.result.error %]</p>
+    </div>
+  [% END %]
   [% IF transport_res.result.ok && !transport_res.fallback %]
   <div class="container row">
     <div class="col-4">

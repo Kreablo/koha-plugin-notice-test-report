@@ -14,8 +14,8 @@ sub _get_letter_module {
     my ($letter_code, $branchcode, $mtt, $lang) = @_;
 
     my $dbh = C4::Context->dbh;
-    my $sth = $dbh->prepare('SELECT module FROM letter WHERE code = ? AND branchcode = ? AND message_transport_type = ?');
-    $sth->execute($letter_code, $branchcode, $mtt);
+    my $sth = $dbh->prepare('SELECT module FROM letter WHERE code = ? LIMIT 1');
+    $sth->execute($letter_code);
     my $href = $sth->fetchrow_hashref;
 
     return $href->{'module'};
@@ -23,6 +23,7 @@ sub _get_letter_module {
 
 sub parse_letter {
     my $letter_branchcode = shift;
+    my $module = shift;
     my $params = shift;
 
     foreach my $required ( qw( letter_code borrowernumber ) ) {
@@ -50,7 +51,6 @@ sub parse_letter {
     my $branchcode = $letter_branchcode;
     my $mtt = $params->{'message_transport_type'};
     my $lang = $params->{'lang'};
-    my $module = _get_letter_module($letter_code, $branchcode, $mtt, $lang);
 
     my $unprepared_letter = Koha::Notice::Templates->find_effective_template(
         {
@@ -76,6 +76,7 @@ sub parse_letter {
 
 sub TestNotice {
     my $letter_branchcode = shift;
+    my $module = shift;
     my $params = shift;
 
     my $parse;
@@ -84,7 +85,7 @@ sub TestNotice {
     local $SIG{__WARN__} = sub{ $warning = $_[0]; };
 
     eval {
-        $parse = parse_letter($letter_branchcode, $params);
+        $parse = parse_letter($letter_branchcode, $module, $params);
     };
 
     my $letter = $parse->{'prepared'};
@@ -92,11 +93,11 @@ sub TestNotice {
     my $res = {
         'lang' => $params->{'lang'},
         'message_transport_type' => $params->{'message_transport_type'},
-        'warning' => $warning
+        'warning' => $warning . $parse->{warning},
     };
 
     if ($@) {
-        $res->{error} = "ERROR: $@\n";
+        $res->{error} = "$@\n";
     } elsif ($letter) {
         $res->{ok} = $letter;
         $res->{template} = $parse->{'unprepared'};
@@ -113,6 +114,7 @@ sub TestNotice {
 sub _TestNotices {
     my $letter_branchcode = shift;
     my $letter_code = shift;
+    my $module = shift;
     my $params = shift;
 
     my $queryfun = $Koha::Plugin::NoticeTestReport::LetterCodes::letter_queries{$letter_code};
@@ -155,11 +157,11 @@ sub _TestNotices {
                 %$rest_params,
             };
 
-            my $result = TestNotice($letter_branchcode, $params);
+            my $result = TestNotice($letter_branchcode, $module, $params);
             my $fallback = $letter_branchcode && !($result->{parsed_branchcode} eq $letter_branchcode);
             if ($fallback) {
                 my $msg = "$letter_branchcode $letter_code $message_transport_type '$lang' is a fallback message but there are some other messages defined for this branch.";
-                $result->{warning} = (defined $result->{warning}) ? $result->warning . "<br>$msg" : $msg;
+                $result->{warning} = $msg;
             }
 
             push @{$transport_results}, {
@@ -178,6 +180,8 @@ sub TestNotices {
     my $letter_code = shift;
     my $rest = @_;
 
+    my $module = _get_letter_module($letter_code);
+
     my $_branch_q = Koha::Notice::Templates->search(
         {
             code => $letter_code
@@ -191,7 +195,7 @@ sub TestNotices {
     my $results = [];
 
     foreach my $branch (@branchcodes) {
-        push @{$results}, { branch => $branch, result => _TestNotices($branch, $letter_code, $rest) };
+        push @{$results}, { branch => $branch, result => _TestNotices($branch, $letter_code, $module, $rest) };
     }
 
     return $results;
