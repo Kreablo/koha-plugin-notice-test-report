@@ -38,15 +38,15 @@ sub report {
     my $cgi = $self->{'cgi'};
     my $selected_code = $cgi->param('code');
     my $selected_categorycode = $cgi->param('categorycode');
-    my $code_results = TestNotices($selected_code, { categorycode => $selected_categorycode });
+    my $branch_results = TestNotices($selected_code, { categorycode => $selected_categorycode });
 
     my $template = $self->get_template({ file => 'test-notices.tt' });
     my $sms_send_driver = C4::Context->preference('SMSSendDriver') =~ s/\s//gr;
 
     $template->param(
-        class => $cgi->param('class'),
-        method => $cgi->param('method'),
-        branch_results => $code_results,
+        class => scalar $cgi->param('class'),
+        method => scalar $cgi->param('method'),
+        branch_results => $branch_results,
         selected_code => $selected_code,
         letter_codes => \@Koha::Plugin::NoticeTestReport::LetterCodes::letter_codes,
         sms_send_driver => $sms_send_driver,
