@@ -10,6 +10,17 @@ use Koha::Notice::Templates;
 
 binmode(STDOUT, ':encoding(UTF-8)');
 
+sub _get_letter_module {
+    my ($letter_code, $branchcode, $mtt, $lang) = @_;
+
+    my $dbh = C4::Context->dbh;
+    my $sth = $dbh->prepare('SELECT module FROM letter WHERE code = ? AND branchcode = ? AND message_transport_type = ?');
+    $sth->execute($letter_code, $branchcode, $mtt);
+    my $href = $sth->fetchrow_hashref;
+
+    return $href->{'module'};
+}
+
 sub parse_letter {
     my $letter_branchcode = shift;
     my $params = shift;
@@ -35,11 +46,11 @@ sub parse_letter {
         $table_params{'reserves'} = $p;
     }
 
-    my $module = 'circulation';
     my $letter_code = $params->{'letter_code'};
     my $branchcode = $letter_branchcode;
     my $mtt = $params->{'message_transport_type'};
     my $lang = $params->{'lang'};
+    my $module = _get_letter_module($letter_code, $branchcode, $mtt, $lang);
 
     my $unprepared_letter = Koha::Notice::Templates->find_effective_template(
         {
